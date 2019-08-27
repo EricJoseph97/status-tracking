@@ -1,0 +1,16 @@
+{
+  "name": "asiwarestatus",
+  "version": "1.0.0",
+  "description": "Page showing the status of the ASI-ware Servers",
+  "main": "app.js",
+  "scripts": {
+    "test": "start app.js"
+  },
+  "author": "Eric Pence",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-webhooks": "^1.4.2",
+    "ping": "^0.2.2"
+  }
+}

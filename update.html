@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <style>
+            * {
+                font-size: 1.1rem;
+                font-weight: 200;
+                font-family: "Open Sans Light", "Open Sans", sans-serif;
+            }
+        </style>
+</head>
+<body>
+    <div class="container p-2">
+        <div class="row">
+            <div class="container w-25">
+                        <ul class="list-group">
+                            <li class="list-group-item"><span id="ValeoSatatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Valeo</span></li>
+                            <li class="list-group-item"><span id="ConstansStatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Constans</span></li>
+                            <li class="list-group-item"><span id="NovusStatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Novus</span></li>
+                            <li class="list-group-item"><span id="ValeoTestSatatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Valeo - Test</span></li>
+                            <li class="list-group-item"><span id="ConstansTestStatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Constans - Test</span></li>
+                            <li class="list-group-item"><span id="NovusTestStatus" class="text-danger" data-toggle="tooltip" data-placement="right"></i>
+                                Novus - Test</span></li>
+                        </ul>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#StatusChange">Change
+                                Statuses</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="StatusChange" tabindex="-1" role="dialog" aria-labelledby="StatusChangeLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="StatusChangeLabel">Change System Status</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="SelectedSystem">System</label>
+                        <select class="form-control" id="SelectedSystem">
+                            <option value="valeo">Valeo</option>
+                            <option value="constans">Constans</option>
+                            <option value="novus">Novus</option>
+                            <option value="valeotest">Valeo Test</option>
+                            <option value="constanstest">Constans Test</option>
+                            <option value="novustest">Novus Test</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-success border-0">
+                                <input type="radio" name="StatusOptions" id="OnlineOption" value="online">
+                            </div>
+                        </div>
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-warning border-0">
+                                <input type="radio" name="StatusOptions" id="ErrorOption" value="error">
+                            </div>
+                        </div>
+                        <div class="input-group-prepend">
+                            <div class="input-group-text bg-danger border-0">
+                                <input type="radio" name="StatusOptions" id="OfflineOption" value="offline">
+                            </div>
+                        </div>
+                        <input type="text" class="form-control" name="StatusMessage" id="StatusMessage" value="message">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="UpdateStatuses">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript">
+
+        $.ajax({
+            method: 'get',
+            url: "http://127.0.0.1:6006/status",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).done((data) => { console.log(data); refreshStatuses(data) });
+
+
+        $("#UpdateStatuses").on("click", function () {
+            var status = $("input:radio[name='StatusOptions']:checked").val();
+            var message = $("#StatusMessage").val();
+            var urlBuilder = "http://127.0.0.1:6006/update/" + $("#SelectedSystem").val();
+
+            $.ajax({
+                method: 'post',
+                url: urlBuilder,
+                contentType: "application/json",
+                data: JSON.stringify({
+                    status: status,
+                    message: message
+                })
+            }).done((data) => { console.log(data); refreshStatuses(data) });
+        });
+
+        refreshStatuses = function (newData) {
+            $("#ValeoSatatus").attr({ "class": getColor(newData.valeo.status), "title": newData.valeo.message }).tooltip('dispose');
+            $("#NovusStatus").attr({ "class": getColor(newData.novus.status), "title": newData.novus.message }).tooltip('dispose');
+            $("#ConstansStatus").attr({ "class": getColor(newData.constans.status), "title": newData.constans.message }).tooltip('dispose');
+            $("#ValeoTestSatatus").attr({ "class": getColor(newData.valeotest.status), "title": newData.valeotest.message }).tooltip('dispose');
+            $("#NovusTestStatus").attr({ "class": getColor(newData.novustest.status), "title": newData.novustest.message }).tooltip('dispose');
+            $("#ConstansTestStatus").attr({ "class": getColor(newData.constanstest.status), "title": newData.constanstest.message }).tooltip('dispose');
+            $('[data-toggle="tooltip"]').tooltip();
+        }
+
+        getColor = function (status) {
+
+            switch (status) {
+                case "online": color = "text-success";
+                    break;
+                case "error": color = "text-warning";
+                    break;
+                case "offline": color = "text-danger";
+                    break;
+                default: color = "text-default";
+                    break;
+            }
+
+            return color;
+        }
+
+
+
+        $('#myModal').on('shown.bs.modal', function () {
+            $('#myInput').trigger('focus')
+        })
+
+    </script>
+</body>
+
+</html>
